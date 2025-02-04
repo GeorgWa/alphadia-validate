@@ -5,9 +5,10 @@ from alphabase.spectral_library.base import SpecLibBase
 
 from alphadia.data.alpharaw_wrapper import Thermo
 from alphadia.test_data_downloader import DataShareDownloader
+from alphabase.spectral_library.flat import SpecLibFlat
 
 
-def prepare_data(main_folder: str) -> tuple[pd.DataFrame, SpecLibBase, Thermo]:
+def prepare_data(main_folder: str) -> tuple[pd.DataFrame, SpecLibBase, SpecLibFlat, Thermo]:
     """Prepare raw & results data.
 
     Note: this is just required if you did not run the search yourself in search_1.10.0.ipynb
@@ -42,4 +43,25 @@ def prepare_data(main_folder: str) -> tuple[pd.DataFrame, SpecLibBase, Thermo]:
     current_raw_path = raw_file_paths[0]
     dia_data = Thermo(current_raw_path)
 
-    return precursor_df, spectral_library, dia_data
+    spectral_library_flat = SpecLibFlat()
+    spectral_library_flat.parse_base_library(spectral_library)
+
+    return precursor_df, spectral_library, spectral_library_flat, dia_data
+
+
+def display_spectral_library(spectral_library):
+    print("precursor_df")
+    display(spectral_library.precursor_df[['precursor_mz', 'sequence', 'mods', 'mod_sites', 'charge', 'mod_seq_charge_hash', 'frag_start_idx', 'frag_stop_idx']].head())
+
+    print("fragment_mz_df")
+    display(spectral_library.fragment_mz_df.head())
+
+    print("fragment_intensity_df")
+    display(spectral_library.fragment_intensity_df.head())
+
+    from alphabase.spectral_library.flat import SpecLibFlat
+    spectral_library_flat = SpecLibFlat()
+    spectral_library_flat.parse_base_library(spectral_library)
+
+    print("spectral_library_flat.fragment_df")
+    display(spectral_library_flat.fragment_df)
