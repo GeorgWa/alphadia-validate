@@ -11,6 +11,13 @@ def plot_simple_mirror(dense, intensity_library, mz_library):
     plt.show()
 
 def plot_simple_xic(dense):
+    """
+    Finally, we will visualize the Precusor ion chromatogram.
+    We will again select the intensity dimension and sum over ion mobility and observation but leave the retention time dimension.
+
+    :param dense:
+    :return:
+    """
     xic_observed = dense[0].sum(axis=(1, 2))
     for i in range(xic_observed.shape[0]):
         plt.plot(xic_observed[i])
