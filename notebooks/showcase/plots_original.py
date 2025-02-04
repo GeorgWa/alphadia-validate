@@ -11,6 +11,7 @@ def plot_simple_mirror(dense, intensity_library, mz_library):
     plt.stem(mz_library, -intensity_library_normalized)
     plt.show()
 
+
 def plot_simple_xic(dense):
     """
     Finally, we will visualize the Precusor ion chromatogram.
