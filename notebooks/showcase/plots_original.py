@@ -2,6 +2,7 @@ from matplotlib import pyplot as plt
 
 
 def plot_simple_mirror(dense, intensity_library, mz_library):
+    """First we will select the intensity dimension and sum over all other dimensions but the fragment mz dimension."""
     intensity_observed = dense[0].sum(axis=(1, 2, 3))
     intensity_observed_normalized = intensity_observed / intensity_observed.max()
     intensity_library_normalized = intensity_library / intensity_library.max()
