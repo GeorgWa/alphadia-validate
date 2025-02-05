@@ -114,8 +114,8 @@ def interpolate_complex_colormap(num_colors):
             t = i / (colors_per_segment - 1 if colors_per_segment > 1 else 1)
             colors.append(interpolate_color(start_color, end_color, t))
 
-    print(num_colors)
-    print(len(colors), colors)
+    #print(num_colors)
+    #print(len(colors), colors)
     colors = list(set(colors))[:original_num_colors]
     return colors
 
@@ -143,13 +143,32 @@ def format_prec_entry(prec):
         seq = prec.sequence
     return f'{seq} (+{prec.charge})'
 
+def add_corr(df_obs, df_library):
+    df_merged = df_library.merge(df_obs, on='mz')
+    df_merged.columns = [c.replace('_x', '_pred').replace('_y', '_obs') for c in df_merged.columns]
+
+    df_merged = df_merged.query('intensity_pred!=0 & intensity_obs!=0')
+    df_corr = (df_merged.groupby('rt_idx')[['intensity_pred','intensity_obs']].corr()
+        .reset_index().melt(id_vars=['rt_idx', 'level_1'])
+         .query('value!=1').query('level_1=="intensity_obs"')
+     .rename(columns={'value': 'corr_coeff'})[['corr_coeff', 'rt_idx']]
+    )
+    df_obs_corr = df_obs.merge(df_corr, on='rt_idx')
+    
+    df_obs_corr['rt_cat'] = df_obs_corr.apply(lambda x: f'{x.rt_idx}, r={round(x.corr_coeff, 2)}', axis=1)
+    return df_obs_corr
+
+
 def plot_mirror_byRT(dense, mz_library, intensity_library, label_library, 
-                     precursor_entry,
+                     precursor_entry, add_corr_coeff=True,
                      width=800, height=300):
     seq = format_prec_entry(precursor_entry)
     df_library = convert_library_to_df(mz_library, intensity_library)
     df_obs = split_dense_byRT(dense, mz_library, label_library)
-    
+
+    if add_corr_coeff:
+        df_obs = add_corr(df_obs, df_library)
+        
     return plot_mirror_byRT_from_dfs(df_obs, df_library, seq, width, height)
     
 def plot_mirror_byRT_from_dfs(df_obs, df_library, title='', width=800, height=300):
