@@ -54,27 +54,79 @@ def interpolate_colors_red_to_green(num_colors):
         colors.append(f"#{red:02X}{green:02X}00")  # Keep blue at 0
     return colors[::-1]
 
+def interpolate_colors_orange_yellow_green(num_colors):
+    colors = []
+    midpoint = num_colors // 2  # Halfway point (orange → yellow, then yellow → green)
+
+    for i in range(num_colors):
+        if i < midpoint:
+            # Interpolate from Orange (#FFA500) to Yellow (#FFFF00)
+            red = 255
+            green = int(165 + (90 * (i / (midpoint - 1))**0.5))  # From 165 (orange) to 255 (yellow)
+        else:
+            # Interpolate from Yellow (#FFFF00) to Green (#00FF00)
+            red = int(255 * (1 - ((i - midpoint) / (num_colors - midpoint - 1))**0.5))  # Red decreases
+            green = 255  # Green stays at 255
+
+        colors.append(f"#{red:02X}{green:02X}00")  # Keep blue at 0
+
+    return colors
+    
 # Function to interpolate colors from red to yellow (existing function)
 def interpolate_colors_red_to_yellow(num_colors):
     colors = []
     for i in range(num_colors):
-        green = int(255 * (i / (num_colors ))**0.3)  # Linear interpolation for the green channel
+        green = int(255 * (i / (num_colors ))**0.7)  # Linear interpolation for the green channel
         colors.append(f"#FF{green:02X}00")  # Format as HEX, keeping red at 255 and blue at 0
     return colors
 
 def interpolate_colors_green_to_yellow(num_colors):
     colors = []
     for i in range(num_colors):
-        red = int(255 * (1 - (i / (num_colors - 1))**0.99))  # Interpolating red channel
-        colors.append(f"#{red:02X}FF90")  # Keep green at 255, blue at 0
+        red = int(255 * (1 - (i / (num_colors - 1))**0.7))  # Interpolating red channel
+        colors.append(f"#{red:02X}FF00")  # Keep green at 255, blue at 0
     return colors[::-1]
+
+def interpolate_complex_colormap(num_colors):
+    original_num_colors = num_colors
+    num_colors = max(12, num_colors)
+    colors = []
+    segments = [
+        ("#FFFF00", "#CCCC00"),  # Yellow → Dark Yellow
+        ("#CCCC00", "#FF8C00"),  # Dark Yellow → Orange
+        ("#FF8C00", "#00FF00"),  # Orange → Green (Middle)
+        ("#00FF00", "#8B4513"),  # Green → Brown
+        ("#8B4513", "#FFC0CB"),  # Brown → Pink
+        ("#FFC0CB", "#ff0000")   # Pink → Red
+    ]
+    
+    num_segments = len(segments)
+    colors_per_segment = num_colors // num_segments
+
+    def interpolate_color(color1, color2, t):
+        """ Linearly interpolate between two hex colors """
+        c1 = [int(color1[i:i+2], 16) for i in (1, 3, 5)]
+        c2 = [int(color2[i:i+2], 16) for i in (1, 3, 5)]
+        return f"#{int(c1[0] + (c2[0] - c1[0]) * t):02X}{int(c1[1] + (c2[1] - c1[1]) * t):02X}{int(c1[2] + (c2[2] - c1[2]) * t):02X}"
+
+    for start_color, end_color in segments:
+        for i in range(colors_per_segment):
+            t = i / (colors_per_segment - 1 if colors_per_segment > 1 else 1)
+            colors.append(interpolate_color(start_color, end_color, t))
+
+    print(num_colors)
+    print(len(colors), colors)
+    colors = list(set(colors))[:original_num_colors]
+    return colors
+
 
 def get_palette_for_RT(num_rt_scans):
     if num_rt_scans ==1:
         return ['#FF0000']
-    left_cols = interpolate_colors_red_to_green(math.ceil(num_rt_scans/2.))[:-1]
-    right_cols = interpolate_colors_green_to_yellow(math.floor(num_rt_scans/2.)+1)
-    return (left_cols + right_cols)[::-1]
+    #left_cols = interpolate_colors_red_to_green(math.ceil(num_rt_scans/2.))[:-1]
+    #right_cols = interpolate_colors_orange_yellow_green(math.floor(num_rt_scans/2.)+1)[::-1]
+    #return (left_cols + right_cols)[::-1]
+    return interpolate_complex_colormap(num_rt_scans)
 
 def format_prec_entry(prec):
     if type(prec.mods)=='str':
