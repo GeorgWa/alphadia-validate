@@ -1,0 +1,43 @@
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build_image:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Print input parameters
+      run: echo "${{ toJSON(github.event.inputs) }}"
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+#    # avoid "no space left on device" error
+#    # https://github.com/actions/runner-images/issues/2840#issuecomment-790492173
+#    - name: cleanup
+#      run: |
+#        sudo rm -rf /usr/share/dotnet
+#        sudo rm -rf /opt/ghc
+#        sudo rm -rf "/usr/local/share/boost"
+#        sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
+    - name: Build and export
+      uses: docker/build-push-action@v6
+      with:
+        tags: validiate:latest
+        context: .
+        outputs: type=docker,dest=/tmp/validiate.tar
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        no-cache: False
+#        build-args: |
+#          A=B
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: validiate
+        path: /tmp/validiate.tar
