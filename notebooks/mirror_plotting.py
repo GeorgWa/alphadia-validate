@@ -69,22 +69,50 @@ def get_palette_for_RT(num_rt_scans):
     right_cols = interpolate_colors_red_to_yellow(math.ceil(num_rt_scans/2.))
     return left_cols + right_cols
 
+def format_prec_entry(prec):
+    if type(prec.mods)=='str':
+        mod_label_mapping = {'Carbamidomethyl':'', 'Oxidation':'(Ox)'}
+        prec = precursor_df.iloc[9]
+        seq = list(prec.sequence)
+        mods = [m.split('@')[0] for m in prec.mods.split(';')]
+        sites = np.array(prec.mod_sites.split(';'), dtype=int) -1 
+        for i, s in enumerate(sites):
+            mod = mods[i] if mods[i] not in mod_label_mapping else mod_label_mapping[mods[i]]
+            seq[s] = f'{seq[s]}{mod}'
+        seq = ''.join(seq) 
+    else:
+        seq = prec.sequence
+    return f'{seq} (+{prec.charge})'
 
-def plot_mirror_byRT(dense, mz_library, intensity_library, label_library, width=800, height=300):
+def plot_mirror_byRT(dense, mz_library, intensity_library, label_library, 
+                     precursor_entry,
+                     width=800, height=300):
+    seq = format_prec_entry(precursor_entry)
     df_library = convert_library_to_df(mz_library, intensity_library)
     df_obs = split_dense_byRT(dense, mz_library, label_library)
     
-    return plot_mirror_byRT_from_dfs(df_obs, df_library, width, height)
+    return plot_mirror_byRT_from_dfs(df_obs, df_library, seq, width, height)
     
-    
-def plot_mirror_byRT_from_dfs(df_obs, df_library, width=800, height=300):
+def plot_mirror_byRT_from_dfs(df_obs, df_library, title='', width=800, height=300):
     theo = plot_theo(df_library)
     obs = plot_obs_byRT(df_obs)
 
     # middle line to separate obs vs theo
-    middle_line = (altair.Chart(pd.DataFrame({'sep': [0]})).mark_rule(size=3).encode( y='sep',  color=altair.value('lightGray')))
+    middle_line = (altair.Chart(pd.DataFrame({'sep': [0]}))
+        .mark_rule(size=3)
+        .encode( y='sep',  color=altair.value('lightGray'))
+    )
 
-    return (obs + theo + middle_line).properties(width=width, height=height)
+    ## title
+    title = altair.TitleParams(
+        text=title,
+        #fontSize=16,
+        fontWeight="bold",
+        #anchor="start",  # Align title to the left
+        color="black"
+    )
+    
+    return (obs + theo + middle_line).properties(width=width, height=height, title=title)
     
 def plot_obs_byRT(df_plot):
     annotation_kws = {'align': 'left',
@@ -96,11 +124,10 @@ def plot_obs_byRT(df_plot):
            ] 
     
     df_plot['label_color'] = (df_plot['frag_label']
-                              .apply(lambda x: fragment_colos[x[0]] if (x!='' and x[0]) in fragment_colos else '#0000FF')
-                             )
+        .apply(lambda x: fragment_colos[x[0]] if (x!='' and x[0]) in fragment_colos else '#0000FF')
+    )
     
     num_rts = df_plot[['rt_cat']].drop_duplicates().shape[0]
-    print(num_rts)
     rt_colors = get_palette_for_RT(num_rts)
     color = altair.Color('rt_cat', scale=altair.Scale(scheme='set2', range=rt_colors), title='RT Scan')
     x = altair.X('mz', axis=altair.Axis(title='m/z', titleFontStyle='italic', grid=True),
