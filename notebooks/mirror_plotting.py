@@ -46,13 +46,13 @@ def convert_library_to_df(mz_library, intensity_library):
     df_library['norm_intensity'] = df_library['intensity']/ max(df_library['intensity'])
     return df_library
 
-def interpolate_colors_green_to_red(num_colors):
+def interpolate_colors_red_to_green(num_colors):
     colors = []
     for i in range(num_colors):
         red = int(255 * (i / (num_colors - 1))**0.7)  # Interpolating red channel
         green = int(255 * (1 - (i / (num_colors - 1))**0.3))  # Interpolating green channel
         colors.append(f"#{red:02X}{green:02X}00")  # Keep blue at 0
-    return colors
+    return colors[::-1]
 
 # Function to interpolate colors from red to yellow (existing function)
 def interpolate_colors_red_to_yellow(num_colors):
@@ -62,12 +62,19 @@ def interpolate_colors_red_to_yellow(num_colors):
         colors.append(f"#FF{green:02X}00")  # Format as HEX, keeping red at 255 and blue at 0
     return colors
 
+def interpolate_colors_green_to_yellow(num_colors):
+    colors = []
+    for i in range(num_colors):
+        red = int(255 * (1 - (i / (num_colors - 1))**0.99))  # Interpolating red channel
+        colors.append(f"#{red:02X}FF90")  # Keep green at 255, blue at 0
+    return colors[::-1]
+
 def get_palette_for_RT(num_rt_scans):
     if num_rt_scans ==1:
         return ['#FF0000']
-    left_cols = interpolate_colors_green_to_red(math.floor(num_rt_scans/2.)+1)[:-1]
-    right_cols = interpolate_colors_red_to_yellow(math.ceil(num_rt_scans/2.))
-    return left_cols + right_cols
+    left_cols = interpolate_colors_red_to_green(math.ceil(num_rt_scans/2.))[:-1]
+    right_cols = interpolate_colors_green_to_yellow(math.floor(num_rt_scans/2.)+1)
+    return (left_cols + right_cols)[::-1]
 
 def format_prec_entry(prec):
     if type(prec.mods)=='str':
