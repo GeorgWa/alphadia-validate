@@ -5,7 +5,7 @@ from collections import Counter
 from alphabase.protein.fasta import SpecLibFasta
 from alphabase.spectral_library.flat import SpecLibFlat
 from alphabase.spectral_library.translate import create_modified_sequence
-from .slicer import SpectrumSlicer, get_flat_library_entry_by_hash
+from .slicer import SpectrumSlicer
 
 def get_isoform_id(
     mods,

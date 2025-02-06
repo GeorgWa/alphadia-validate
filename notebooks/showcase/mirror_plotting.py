@@ -1,12 +1,9 @@
 import altair
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import seaborn as sns
-import os
-import math
 
-from xic_utils import normalize_profiles, median_axis, correlation_coefficient
+from .xic_utils import normalize_profiles, median_axis, correlation_coefficient
 
 
 
