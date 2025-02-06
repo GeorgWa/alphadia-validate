@@ -1,7 +1,4 @@
-#FROM jupyter/minimal-notebook:latest
-
-# https://github.com/michaelosthege/pythonnet-docker
-FROM --platform=linux/amd64 mosthege/pythonnet:python3.10.10-mono6.12-pythonnet3.0.1
+FROM python:3.11
 
 # Prevents Python from writing pyc files.
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -10,21 +7,35 @@ ENV PYTHONDONTWRITEBYTECODE=1
 # the application crashes without emitting any logs due to buffering.
 ENV PYTHONUNBUFFERED=1
 
-
 WORKDIR /app
+
+# prepare pip
+RUN printf '[install]\ncompile = no\n[global]\nno-cache-dir = True' >> /etc/pip.conf
+RUN pip install --upgrade pip
+
+# we are installing alpharaw and alphadia from special hackathon branches
+RUN git clone https://github.com/MannLabs/alpharaw.git \
+    && cd alpharaw \
+    && git checkout tmp_hackathon
+
+RUN cd alpharaw && pip install .
 
 RUN git clone https://github.com/MannLabs/alphadia.git \
     && cd alphadia \
-    && git checkout main
+    && git checkout tmp_hackathon
 
-RUN printf '[install]\ncompile = no\n[global]\nno-cache-dir = True' >> /etc/pip.conf
+RUN git clone https://github.com/MannLabs/alphabase.git \
+    && cd alphabase \
+    && git checkout v1.4.2
+
+# reduce the dependencies of alphadia and alphabase
+COPY notebooks/requirements_alphabase.txt alphabase/requirements.txt
+COPY notebooks/requirements_alphadia.txt alphadia/requirements/requirements.txt
+COPY notebooks/requirements_alphadia.txt alphadia/requirements/requirements_loose.txt
 
 RUN cd alphadia && pip install ".[stable]"
 
-#RUN #cd alphadia && pip install -r requirements/requirements.txt
-# TODO fix the alphadia version
-
-
+RUN pip install matplotlib progressbar altair seaborn
 RUN pip install jupyter
 
 # Make port 8888 available to the world outside this container
@@ -32,15 +43,17 @@ EXPOSE 8888
 
 #RUN git clone https://github.com/GeorgWa/alphadia-validate.git adv
 
-
+# copy over the code
 COPY notebooks/showcase /app/notebooks/showcase
 COPY notebooks/showcase.ipynb /app/notebooks
 # add all other directories here
 COPY notebooks/xic /app/notebooks/xic
-COPY notebooks/magnus_utils /app/notebooks/magnus_utils
 COPY notebooks/mirror_plotting.py /app/notebooks
+COPY notebooks/shared_fragment_histogram.png /app/notebooks
 
+ENV BASE_FOLDER=/app/base
 
+RUN rm -r alphadia alphabase alpharaw
 
 CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root", \
 "--NotebookApp.token=''", "--NotebookApp.password=''"]
