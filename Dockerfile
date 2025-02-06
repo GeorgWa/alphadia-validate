@@ -45,7 +45,7 @@ EXPOSE 8888
 #RUN git clone https://github.com/GeorgWa/alphadia-validate.git adv
 
 # copy over the code
-COPY notebooks/showcase /app/notebooks/showcase
+COPY notebooks/src /app/notebooks/src
 COPY notebooks/showcase.ipynb /app/notebooks
 COPY misc /app/misc
 
