@@ -29,9 +29,9 @@ RUN git clone https://github.com/MannLabs/alphabase.git \
     && git checkout v1.4.2
 
 # reduce the dependencies of alphadia and alphabase
-COPY notebooks/requirements_alphabase.txt alphabase/requirements.txt
-COPY notebooks/requirements_alphadia.txt alphadia/requirements/requirements.txt
-COPY notebooks/requirements_alphadia.txt alphadia/requirements/requirements_loose.txt
+COPY misc/requirements_alphabase.txt alphabase/requirements.txt
+COPY misc/requirements_alphadia.txt alphadia/requirements/requirements.txt
+COPY misc/requirements_alphadia.txt alphadia/requirements/requirements_loose.txt
 
 RUN cd alphadia && pip install ".[stable]"
 
@@ -49,7 +49,7 @@ COPY notebooks/showcase.ipynb /app/notebooks
 # add all other directories here
 COPY notebooks/xic /app/notebooks/xic
 COPY notebooks/mirror_plotting.py /app/notebooks
-COPY notebooks/shared_fragment_histogram.png /app/notebooks
+COPY misc/*.png /app/notebooks
 
 ENV BASE_FOLDER=/app/base
 
