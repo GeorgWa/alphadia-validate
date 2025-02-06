@@ -38,7 +38,7 @@ def get_flat_library_entry_by_hash(speclib_flat, hash_, min_intensity=0.01):
     speclib_entry = speclib_flat.precursor_df[
         speclib_flat.precursor_df["mod_seq_charge_hash"] == hash_
     ].iloc[0]
-
+    
     flat_frag_start_idx = speclib_entry.flat_frag_start_idx
     flat_frag_stop_idx = speclib_entry.flat_frag_stop_idx
 
@@ -54,18 +54,36 @@ def get_flat_library_entry_by_hash(speclib_flat, hash_, min_intensity=0.01):
         .to_numpy()
         .flatten()
     )
-    fragment_mask = fragment_intensity > min_intensity
 
+    fragment_label = (
+        speclib_flat.fragment_df['fragment_label']
+        .iloc[flat_frag_start_idx:flat_frag_stop_idx]
+        .to_numpy()
+        .flatten()
+    )
+    
+    fragment_mask = fragment_intensity > min_intensity
+    
     fragment_mz = fragment_mz[fragment_mask]
     fragment_intensity = fragment_intensity[fragment_mask]
+    fragment_label = fragment_label[fragment_mask]
 
     # sort both by mz
     fragment_order = np.argsort(fragment_mz)
     fragment_mz = fragment_mz[fragment_order]
     fragment_intensity = fragment_intensity[fragment_order]
+    fragment_label = fragment_label[fragment_order]
 
-    return speclib_entry, fragment_mz, fragment_intensity
+    return speclib_entry, fragment_mz, fragment_intensity, fragment_label
 
+type_map = {97:'a', 98:'b', 99: 'c', 120: 'x', 121:'y', 12:'z'}
+loss_map = {0: '', 18 : 'H2O', 17: 'NH3'}
+
+def get_ion_labels(row):
+    ls_label = loss_map[int(row["loss_type"])]
+    ls_label = '_'+ls_label if ls_label!='' else ''
+    label = f'{type_map[row["type"]]}{int(row["number"])}{ls_label}(+{int(row["charge"])})'
+    return label
 
 class SpectrumSlicer:
     def __init__(
@@ -74,13 +92,18 @@ class SpectrumSlicer:
         precursor_df: pd.DataFrame,
         dia_data: Thermo,
     ):
+        # Get fragment annotations
+        spectral_library_flat.fragment_df['fragment_label'] = (
+            spectral_library_flat.fragment_df.apply(get_ion_labels, axis=1)
+        )
         self.spectral_library_flat = spectral_library_flat
+
         self.precursor_df = precursor_df
         self.dia_data = dia_data
 
     def get_by_hash(
         self, selected_hash: int
-    ) -> tuple[np.ndarray, pd.DataFrame, pd.DataFrame]:
+    ) -> tuple[np.ndarray, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         """#### 4 Visualize precursor data
 
         :returns: np.ndarray
@@ -93,7 +116,7 @@ class SpectrumSlicer:
         - 4: Retention time datapoints.
         """
 
-        speclib_entry, mz_library, intensity_library = get_flat_library_entry_by_hash(
+        speclib_entry, mz_library, intensity_library, fragment_library = get_flat_library_entry_by_hash(
             self.spectral_library_flat, selected_hash
         )
         precursor_entry = self.precursor_df[
@@ -120,4 +143,4 @@ class SpectrumSlicer:
             precursor_query,
         )
 
-        return mz_library, intensity_library, spectrum_slice
+        return mz_library, intensity_library, spectrum_slice, fragment_library

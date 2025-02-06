@@ -70,7 +70,7 @@ def isoform_attention_plot(spectral_library_flat, precursor_df, dia_data, select
 
     print(precursor_entry[['sequence', 'mods', 'mod_sites']])
 
-    mz_library, intensity_library, data_slice = slicer.get_by_hash(selected_hash)
+    mz_library, intensity_library, data_slice, _ = slicer.get_by_hash(selected_hash)
 
     isoform_map = fragment_isoform_annotation(precursor_entry)
         
