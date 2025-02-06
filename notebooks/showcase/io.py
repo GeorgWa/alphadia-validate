@@ -20,7 +20,7 @@ SPECLIB_URL = "https://datashare.biochem.mpg.de/s/VxakpS6mhM2IwxJ"
 
 from joblib import Memory
 
-memory = Memory("cachedir")
+memory = Memory(".memoize_cachedir")
 
 
 @memory.cache
