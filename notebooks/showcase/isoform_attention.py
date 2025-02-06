@@ -78,10 +78,10 @@ def isoform_attention_plot(spectral_library_flat, precursor_df, dia_data, select
     intensity_observed_normalized = intensity_observed / intensity_observed.max()
     library_spec['intensity'] = library_spec['intensity'] / library_spec['intensity'].max()
 
-    plt.stem(mz_library, intensity_observed_normalized, markerfmt='None')
+    plt.stem(mz_library, intensity_observed_normalized, markerfmt='None', basefmt='grey')
     for n, (isoform_id, peak_group) in enumerate(library_spec.groupby('isoform')):
-        plt.stem(peak_group['mz'], -1 * peak_group['intensity'],
-                 linefmt=plt.colormaps['tab10'](n + 1), label=isoform_id, markerfmt='None')
+        plt.stem(peak_group['mz'], -1 * peak_group['intensity'], basefmt='grey',
+                 linefmt=f'C{n + 1}-', label=isoform_id, markerfmt='None')
 
     plt.legend()
     plt.title(create_modified_sequence((precursor_entry['sequence'], precursor_entry['mods'], precursor_entry['mod_sites']),
