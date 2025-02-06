@@ -37,7 +37,7 @@ def get_flat_library_entry_by_hash(speclib_flat, hash_, min_intensity=0.01):
     speclib_entry = speclib_flat.precursor_df[
         speclib_flat.precursor_df["mod_seq_charge_hash"] == hash_
     ].iloc[0]
-    
+
     flat_frag_start_idx = speclib_entry.flat_frag_start_idx
     flat_frag_stop_idx = speclib_entry.flat_frag_stop_idx
 
@@ -55,14 +55,14 @@ def get_flat_library_entry_by_hash(speclib_flat, hash_, min_intensity=0.01):
     )
 
     fragment_label = (
-        speclib_flat.fragment_df['fragment_label']
+        speclib_flat.fragment_df["fragment_label"]
         .iloc[flat_frag_start_idx:flat_frag_stop_idx]
         .to_numpy()
         .flatten()
     )
-    
+
     fragment_mask = fragment_intensity > min_intensity
-    
+
     fragment_mz = fragment_mz[fragment_mask]
     fragment_intensity = fragment_intensity[fragment_mask]
     fragment_label = fragment_label[fragment_mask]
@@ -75,14 +75,19 @@ def get_flat_library_entry_by_hash(speclib_flat, hash_, min_intensity=0.01):
 
     return speclib_entry, fragment_mz, fragment_intensity, fragment_label
 
-type_map = {97:'a', 98:'b', 99: 'c', 120: 'x', 121:'y', 12:'z'}
-loss_map = {0: '', 18 : 'H2O', 17: 'NH3'}
+
+type_map = {97: "a", 98: "b", 99: "c", 120: "x", 121: "y", 12: "z"}
+loss_map = {0: "", 18: "H2O", 17: "NH3"}
+
 
 def get_ion_labels(row):
     ls_label = loss_map[int(row["loss_type"])]
-    ls_label = '_'+ls_label if ls_label!='' else ''
-    label = f'{type_map[row["type"]]}{int(row["number"])}{ls_label}(+{int(row["charge"])})'
+    ls_label = "_" + ls_label if ls_label != "" else ""
+    label = (
+        f"{type_map[row['type']]}{int(row['number'])}{ls_label}(+{int(row['charge'])})"
+    )
     return label
+
 
 class SpectrumSlicer:
     def __init__(
@@ -92,7 +97,7 @@ class SpectrumSlicer:
         dia_data,
     ):
         # Get fragment annotations
-        spectral_library_flat.fragment_df['fragment_label'] = (
+        spectral_library_flat.fragment_df["fragment_label"] = (
             spectral_library_flat.fragment_df.apply(get_ion_labels, axis=1)
         )
         self.spectral_library_flat = spectral_library_flat
@@ -115,8 +120,8 @@ class SpectrumSlicer:
         - 4: Retention time datapoints.
         """
 
-        speclib_entry, mz_library, intensity_library, fragment_library = get_flat_library_entry_by_hash(
-            self.spectral_library_flat, selected_hash
+        speclib_entry, mz_library, intensity_library, fragment_library = (
+            get_flat_library_entry_by_hash(self.spectral_library_flat, selected_hash)
         )
         precursor_entry = self.precursor_df[
             self.precursor_df["mod_seq_charge_hash"] == selected_hash

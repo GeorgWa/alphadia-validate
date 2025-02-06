@@ -11,7 +11,7 @@ from alphadia.test_data_downloader import DataShareDownloader
 from alphabase.spectral_library.flat import SpecLibFlat
 
 # Bulk injections of HeLa cell lysate acquired on the Orbitrap Astral
-RAW_DATA_URL =  "https://datashare.biochem.mpg.de/s/339jg5HtGrwLwDN/download?files=20231017_OA2_TiHe_ADIAMA_HeLa_200ng_Evo011_21min_F-40_07.raw"
+RAW_DATA_URL = "https://datashare.biochem.mpg.de/s/339jg5HtGrwLwDN/download?files=20231017_OA2_TiHe_ADIAMA_HeLa_200ng_Evo011_21min_F-40_07.raw"
 
 
 # results from search_1.10.0.ipynb
@@ -49,8 +49,14 @@ def prepare_data(
     if download_data:
         precursors_tsv_path, raw_file_path, speclib_path = _download_data(main_folder)
     else:
-        if precursors_file_name is None or raw_file_name is None or speclib_file_name is None:
-            raise ValueError("Please provide the file names for the precursors, raw file and speclib files")
+        if (
+            precursors_file_name is None
+            or raw_file_name is None
+            or speclib_file_name is None
+        ):
+            raise ValueError(
+                "Please provide the file names for the precursors, raw file and speclib files"
+            )
 
         precursors_tsv_path = main_folder / precursors_file_name
         raw_file_path = main_folder / raw_file_name
@@ -64,15 +70,15 @@ def prepare_data(
     spectral_library.load_hdf(speclib_path)
 
     # caching to pkl
-    if (pkl_path:= Path(main_folder) / f"{Path(raw_file_path).stem}.pkl").exists():
+    if (pkl_path := Path(main_folder) / f"{Path(raw_file_path).stem}.pkl").exists():
         print("loading raw data from pkl...")
-        with open(pkl_path, 'rb') as file:
+        with open(pkl_path, "rb") as file:
             dia_data = pickle.load(file)
     else:
         dia_data = Thermo(raw_file_path)
         if save_pickle:
             print("saving raw data to pkl...")
-            with open(pkl_path, 'wb') as file:
+            with open(pkl_path, "wb") as file:
                 pickle.dump(dia_data, file)
 
     spectral_library_flat = SpecLibFlat()
