@@ -50,7 +50,7 @@ COPY notebooks/showcase.ipynb /app/notebooks
 # add all other directories here
 COPY notebooks/xic /app/notebooks/xic
 COPY notebooks/showcase/mirror_plotting.py /app/notebooks
-COPY misc/*.png /app/misc
+COPY misc /app/misc
 
 ENV BASE_FOLDER=/app/base
 

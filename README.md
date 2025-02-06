@@ -9,13 +9,14 @@ and
 [shared_fragment_histogram.ipynb](https://github.com/GeorgWa/alphadia-validate/blob/main/notebooks/shared_fragment_histogram.ipynb)
 
 If you have any troubles, questions or suggestions, please get in touch,
-e.g. by [opening an issue](https://github.com/GeorgWa/alphadia-validate/issues/new/choose).
+e.g. by [opening an issue](https://github.com/GeorgWa/alphadia-validate/issues/new?template=Blank+issue).
 
 ## Data
 The main notebook is designed to run self-contained, if you
 don't provide data, it will download it.
 
-If you want to use your own data, process a `.raw` file with AlphaDIA (cf. `search.ipynb`
+If you want to use your own data, process a `.raw` file with AlphaDIA (cf. 
+[search.ipynb]((https://github.com/GeorgWa/alphadia-validate/blob/main/notebooks/initial/search.ipynb))
 and/or this [guide](https://alphadia.readthedocs.io/en/latest/guides/libfree-gui.html),
 and save it together with the `precursors.tsv` and the `speclib.hdf` files here:
 ```bash
@@ -33,8 +34,8 @@ pip install "alphadia[stable]==1.9.3-dev2""
 4. Open the two main notebooks (cf. above) and start exploring 
 
 ## Run in Docker
-This is a convenient solution to try this out without any modication to your system (except for Docker).
-
+This is a convenient solution to try this out without any modification to your system (except for Docker).
+However, it just works with a pre-downloaded pickled raw data file.
 
 1. Install [Docker](https://docs.docker.com/engine/install/ubuntu/).
 
@@ -50,7 +51,7 @@ docker build -f Dockerfile --progress=plain -t alphadia-validiate .
 4. Run the container
 ```bash
 BASE_FOLDER=~/alphadia-validate
-docker run -p 8887:8888 -v $BASE_FOLDER:/app/base/ -it alphadia-validiate
+docker run -p 8888:8888 -v $BASE_FOLDER:/app/base/ -it alphadia-validiate
 ```
 
-5. Open the Jupyter notebook in your browser: http://localhost:8887/notebooks/notebooks/showcase.ipynb
+5. Open the Jupyter notebook in your browser: http://localhost:8888/notebooks/notebooks/showcase.ipynb
