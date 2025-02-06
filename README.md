@@ -9,7 +9,8 @@ pip install "alphadia[stable]==1.9.3-dev2""
 ```
 2. (non-Windows) install `mono`
 3. Install jupyter
-4. open `notebooks/showcase.ipynb`
+4. open `notebooks/showcase.ipynb` and `notebooks/shared_fragment_histogram.ipynb`
+Please ignore all the other notebooks, they were work in progress.
 
 
 ## Run in Docker
