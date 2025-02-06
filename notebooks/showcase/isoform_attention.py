@@ -117,6 +117,9 @@ def isoform_attention_plot(spectral_library_flat, precursor_df, dia_data, select
     slicer = SpectrumSlicer(spectral_library_flat, precursor_df, dia_data)
     
     precursor_entry = precursor_df[precursor_df['mod_seq_charge_hash'] == selected_hash].iloc[0]
+    precursor_entry = precursor_entry.fillna('')
+
+    print(precursor_entry[['sequence', 'mods', 'mod_sites']])
 
     mz_library, intensity_library, data_slice = slicer.get_by_hash(selected_hash)
 
