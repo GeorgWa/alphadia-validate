@@ -17,11 +17,21 @@ RUN git clone https://github.com/MannLabs/alphadia.git \
     && cd alphadia \
     && git checkout main
 
-RUN --mount=type=cache,target=/root/.cache/pip \
-    cd alphadia && pip install ".[stable]"
+RUN printf '[install]\ncompile = no\n[global]\nno-cache-dir = True' >> /etc/pip.conf
+
+RUN cd alphadia && pip install ".[stable]"
 
 #RUN #cd alphadia && pip install -r requirements/requirements.txt
 # TODO fix the alphadia version
+
+
+RUN pip install jupyter
+
+# Make port 8888 available to the world outside this container
+EXPOSE 8888
+
+#RUN git clone https://github.com/GeorgWa/alphadia-validate.git adv
+
 
 COPY notebooks/showcase /app/notebooks/showcase
 COPY notebooks/showcase.ipynb /app/notebooks
@@ -32,9 +42,10 @@ COPY notebooks/mirror_plotting.py /app/notebooks
 
 
 
-ENTRYPOINT ["jupyter", "notebook", "notebooks/showcase.ipynb", "--NotebookApp.token=''", "--NotebookApp.password=''"]
+CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root", \
+"--NotebookApp.token=''", "--NotebookApp.password=''"]
 
-#docker build -f Dockerfile  --build-arg="ALPHABASE_REF=latest" -t validiate .
+#docker build -f Dockerfile  --progress=plain --build-arg="ALPHABASE_REF=latest" -t validiate .
 
 # run bash:
 # DATA_FOLDER=.
