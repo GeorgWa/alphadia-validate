@@ -10,8 +10,9 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
 # prepare pip
-RUN printf '[install]\ncompile = no\n[global]\nno-cache-dir = True' >> /etc/pip.conf
 RUN pip install --upgrade pip
+RUN printf '[install]\ncompile = no\n[global]\nno-cache-dir = True' >> /etc/pip.conf
+
 
 # we are installing alpharaw and alphadia from special hackathon branches
 RUN git clone https://github.com/MannLabs/alpharaw.git \
@@ -49,7 +50,7 @@ COPY notebooks/showcase.ipynb /app/notebooks
 # add all other directories here
 COPY notebooks/xic /app/notebooks/xic
 COPY notebooks/showcase/mirror_plotting.py /app/notebooks
-COPY misc/*.png /app/notebooks
+COPY misc/*.png /app/misc
 
 ENV BASE_FOLDER=/app/base
 
