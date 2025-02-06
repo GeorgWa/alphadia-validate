@@ -3,9 +3,13 @@ A set of tools to validate DIA data.
 
 
 ## Run locally
-1. create a conda environment with latest alphadia (developer version, extra 'stable', tag v1.9.3-dev2)
+1. create a conda environment, install AlphaDIA (cf. https://github.com/MannLabs/alphadia?tab=readme-ov-file#pip-installation)
+```bash
+pip install "alphadia[stable]==1.9.3-dev2""
+```
 2. (non-Windows) install `mono`
-3. Install jupyter and open `notebooks/showcase.ipynb`.
+3. Install jupyter
+4. open `notebooks/showcase.ipynb`
 
 
 ## Run in Docker
