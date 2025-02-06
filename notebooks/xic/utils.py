@@ -55,26 +55,26 @@ def normalize_profiles(intensity_slice, center_dilations=2):
         center_dilations: number of points to consider around center for normalization
     
     Returns:
-        numpy array of normalized intensity profiles where values > 0 in center
+        numpy array of normalized intensity profiles with same shape as input,
+        where profiles with zero center intensity are set to zero
     """
-    
     center_idx = intensity_slice.shape[1] // 2
 
     # Calculate mean manually instead of using axis parameter
     center_intensity = np.ones((intensity_slice.shape[0], 1))
-    intensity_mask = np.zeros(intensity_slice.shape[0], dtype=np.bool_)
-
+    
     for i in range(intensity_slice.shape[0]):
         window = intensity_slice[i, center_idx-center_dilations:center_idx+center_dilations]
         center_intensity[i, 0] = np.sum(window) / window.shape[0]
-        intensity_mask[i] = center_intensity[i, 0] > 0
-
-    # filter for > 0
-    center_intensity_divisor = center_intensity[intensity_mask]
-    intensity_slice = intensity_slice[intensity_mask]
-
-    # intensity slice normalized by max intensity
-    center_intensity_normalized = intensity_slice / center_intensity_divisor
+    
+    # Create normalized output array, initialized to zeros
+    center_intensity_normalized = np.zeros_like(intensity_slice)
+    
+    # Only normalize profiles where center intensity > 0
+    for i in range(intensity_slice.shape[0]):
+        if center_intensity[i, 0] > 0:
+            center_intensity_normalized[i] = intensity_slice[i] / center_intensity[i, 0]
+    
     return center_intensity_normalized
 
 @nb.njit
