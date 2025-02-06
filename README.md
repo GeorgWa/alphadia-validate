@@ -1,6 +1,7 @@
 # alphadia-validate
 A set of tools to validate DIA data.
 ![Example for extended mirror plot](misc/mirror.png)
+![Example for extended mirror plot](misc/shared_fragment_histogram.png)
 
 ## Run locally
 1. create a conda environment, install AlphaDIA (cf. https://github.com/MannLabs/alphadia?tab=readme-ov-file#pip-installation)
@@ -9,8 +10,10 @@ pip install "alphadia[stable]==1.9.3-dev2""
 ```
 2. (non-Windows) install `mono`
 3. Install jupyter
-4. open `notebooks/showcase.ipynb` and `notebooks/shared_fragment_histogram.ipynb`
-Please ignore all the other notebooks, they were work in progress.
+4. open [notebooks/showcase.ipynb](https://github.com/GeorgWa/alphadia-validate/blob/main/notebooks/showcase.ipynb) 
+and 
+[notebooks/shared_fragment_histogram.ipynb](https://github.com/GeorgWa/alphadia-validate/blob/main/notebooks/shared_fragment_histogram.ipynb)
+Please ignore all the other notebooks, they are work in progress.
 
 
 ## Run in Docker
