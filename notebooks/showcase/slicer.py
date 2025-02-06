@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 from alphabase.spectral_library.flat import SpecLibFlat
-from alphadia.data.alpharaw_wrapper import Thermo
 
 
 def get_library_entry_by_hash(speclib, hash_, min_intensity=0.01):
@@ -90,7 +89,7 @@ class SpectrumSlicer:
         self,
         spectral_library_flat: SpecLibFlat,
         precursor_df: pd.DataFrame,
-        dia_data: Thermo,
+        dia_data,
     ):
         # Get fragment annotations
         spectral_library_flat.fragment_df['fragment_label'] = (
