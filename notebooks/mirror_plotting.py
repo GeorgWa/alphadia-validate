@@ -345,9 +345,10 @@ def plot_correlations(spectrum_slice, mz_library):
     return corr_p
 
 def mirror_w_xic_w_corrs(spectrum_slice, mz_library, intensity_library, 
-                 fragment_library, precursor_entry,
+                 fragment_library, precursor_df, selected_hash,
                  width=600, height=300):
 
+    precursor_entry = precursor_df[precursor_df['mod_seq_charge_hash'] == selected_hash].iloc[0]
 
     mirror = plot_mirror_byRT(spectrum_slice, mz_library, intensity_library, 
                  fragment_library, precursor_entry,

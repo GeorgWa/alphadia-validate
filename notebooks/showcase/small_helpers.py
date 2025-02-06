@@ -15,7 +15,10 @@ def get_random_precursor_hash(precursor_df: pd.DataFrame, quantile: int, *, n_qu
 
     # Select a random precursor from the 3rd quantile
     random_precursor = quantiles[quantile].sample(n=1)
-    print("picked", random_precursor["sequence"].values[0], random_precursor["qval"].values[0])
+    print("picked",
+          random_precursor.index.values[0],
+          random_precursor["sequence"].values[0], "qval=",
+          random_precursor["qval"].values[0])
     return random_precursor["mod_seq_charge_hash"].values[0]
 
 
