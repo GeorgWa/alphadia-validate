@@ -1,4 +1,4 @@
-from xic.utils import normalize_profiles, median_axis, correlation_coefficient
+from xic_utils import normalize_profiles, median_axis, correlation_coefficient
 import altair as alt
 import pandas as pd
 import numpy as np
