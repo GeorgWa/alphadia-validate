@@ -1,10 +1,12 @@
 import os
+import pickle
 from pathlib import Path
 
 import pandas as pd
 from alphabase.spectral_library.base import SpecLibBase
 
 from alphadia.data.alpharaw_wrapper import Thermo
+
 from alphadia.test_data_downloader import DataShareDownloader
 from alphabase.spectral_library.flat import SpecLibFlat
 
@@ -26,6 +28,7 @@ memory = Memory(".memoize_cachedir")
 @memory.cache
 def prepare_data(
     main_folder: Path,
+    save_pickle: bool = False
 ) -> tuple[pd.DataFrame, SpecLibBase, SpecLibFlat, Thermo]:
     """Prepare raw & results data.
 
@@ -42,7 +45,19 @@ def prepare_data(
     spectral_library = SpecLibBase()
     spectral_library.load_hdf(speclib_path)
 
-    dia_data = Thermo(current_raw_path)
+    # caching to pkl
+    pkl_path = Path(main_folder) / "output" / f"{Path(current_raw_path).stem}.pkl"
+    if pkl_path.exists():
+        print("loading raw data from pkl...")
+        with open(pkl_path, 'rb') as file:
+            dia_data = pickle.load(file)
+    else:
+        dia_data = Thermo(current_raw_path)
+        if save_pickle:
+            print("saving raw data to pkl...")
+            with open(pkl_path, 'wb') as file:
+                pickle.dump(dia_data, file)
+
 
     spectral_library_flat = SpecLibFlat()
     spectral_library_flat.parse_base_library(spectral_library)
