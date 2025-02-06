@@ -8,6 +8,8 @@ See these two notebooks:
 and 
 [shared_fragment_histogram.ipynb](https://github.com/GeorgWa/alphadia-validate/blob/main/notebooks/shared_fragment_histogram.ipynb)
 
+If you have any troubles, questions or suggestions, please get in touch,
+e.g. by [opening an issue](https://github.com/GeorgWa/alphadia-validate/issues/new/choose).
 
 ## Data
 The main notebook is designed to run self-contained, if you
