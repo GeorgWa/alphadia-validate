@@ -103,7 +103,7 @@ class SpectrumSlicer:
 
     def get_by_hash(
         self, selected_hash: int
-    ) -> tuple[np.ndarray, pd.DataFrame, pd.DataFrame]:
+    ) -> tuple[np.ndarray, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         """#### 4 Visualize precursor data
 
         :returns: np.ndarray
