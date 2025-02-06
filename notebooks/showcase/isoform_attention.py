@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from collections import Counter
 from alphabase.protein.fasta import SpecLibFasta
 from alphabase.spectral_library.flat import SpecLibFlat
+from alphabase.spectral_library.translate import create_modified_sequence
 from .slicer import SpectrumSlicer, get_flat_library_entry_by_hash
 
 def fragment_isoform_annotation(precursor_entry, fixed_mods = {'Carbamidomethyl@C'}):  
@@ -77,10 +78,15 @@ def isoform_attention_plot(spectral_library_flat, precursor_df, dia_data, select
     intensity_observed_normalized = intensity_observed / intensity_observed.max()
     library_spec['intensity'] = library_spec['intensity'] / library_spec['intensity'].max()
 
-    plt.stem(mz_library, intensity_observed_normalized)
-    for n, (iii, gr) in enumerate(library_spec.groupby('isoform')):
-        plt.stem(gr['mz'], -1 * gr['intensity'], linefmt=plt.colormaps['tab10'](n + 1), label=iii)
+    plt.stem(mz_library, intensity_observed_normalized, markerfmt='None')
+    for n, (isoform_id, peak_group) in enumerate(library_spec.groupby('isoform')):
+        plt.stem(peak_group['mz'], -1 * peak_group['intensity'],
+                 linefmt=plt.colormaps['tab10'](n + 1), label=isoform_id, markerfmt='None')
 
     plt.legend()
-    plt.title('{} {} {}'.format(precursor_entry['sequence'], precursor_entry['mods'], precursor_entry['mod_sites']))
+    plt.title(create_modified_sequence((precursor_entry['sequence'], precursor_entry['mods'], precursor_entry['mod_sites']),
+                                       nterm='', cterm=''))
+    
+    plt.xlabel('m/z')
+    plt.ylabel('Relative Intensity')
     plt.show()
