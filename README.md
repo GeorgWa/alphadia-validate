@@ -13,7 +13,8 @@ and
 The main notebook is designed to run self-contained, if you
 don't provide data, it will download it.
 
-If you want to use your own data, process a `.raw` file with AlphaDIA (cf. `search.ipynb`),
+If you want to use your own data, process a `.raw` file with AlphaDIA (cf. `search.ipynb`
+and/or this [guide](https://alphadia.readthedocs.io/en/latest/guides/libfree-gui.html),
 and save it together with the `precursors.tsv` and the `speclib.hdf` files here:
 ```bash
 mkdir ~/alphadia-validate
