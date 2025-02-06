@@ -6,6 +6,10 @@ import seaborn as sns
 import os
 import math
 
+from xic.utils import normalize_profiles, median_axis, correlation_coefficient
+
+
+
 fragment_colos = {'a': '#388E3C', 'b': '#1976D2', 'c': '#00796B',
           'x': '#7B1FA2', 'y': '#D32F2F', 'z': '#F57C00',
           'unknown': '#212121', None: "#808080" }
@@ -306,7 +310,7 @@ def plot_xic_w_background(spectrum_slice, palette_name=None, hex_colors=None):
         x=altair.X('RT_scan:Q', axis=altair.Axis(title=None, labels=False, ticks=False)),#'RT_scan:Q',
         y='intensity:Q',
         color=altair.Color('mz_scan:Q', scale=altair.Scale(scheme='greys'), 
-                        legend=altair.Legend(title="m/z scan"))
+                        legend=altair.Legend(title="Fragment No."))
     )
     
     
@@ -322,8 +326,25 @@ def plot_xic_w_background(spectrum_slice, palette_name=None, hex_colors=None):
     
     return chart
 
+def plot_correlations(spectrum_slice, mz_library):
+    intensity_slice = spectrum_slice[0].sum(axis=1).sum(axis=1)
+    normalized_intensity_slice = normalize_profiles(intensity_slice)
+    median_profile = median_axis(normalized_intensity_slice, axis=0)
+    corr_list = correlation_coefficient(median_profile, intensity_slice)
+    
+    df_corrs = pd.DataFrame({'mz': mz_library, 'corr_coeff': corr_list})
+    
+    # Create the bar plot
+    corr_p = altair.Chart(df_corrs).mark_circle().encode(
+        x=altair.X('mz:Q', axis=altair.Axis(title='m/z')),
+        y=altair.X('corr_coeff:Q', axis=altair.Axis(title='Correlation')) , 
+        #size='corr_coeff:Q'  # Circle size based on the correlation coefficient
+        size=altair.Size('corr_coeff:Q',# scale=altair.Scale(scheme='greys'), 
+                        legend=altair.Legend(title="Correlation"))
+    )
+    return corr_p
 
-def mirror_w_xic(spectrum_slice, mz_library, intensity_library, 
+def mirror_w_xic_w_corrs(spectrum_slice, mz_library, intensity_library, 
                  fragment_library, precursor_entry,
                  width=600, height=300):
 
@@ -331,13 +352,22 @@ def mirror_w_xic(spectrum_slice, mz_library, intensity_library,
     mirror = plot_mirror_byRT(spectrum_slice, mz_library, intensity_library, 
                  fragment_library, precursor_entry,
                  width=width*0.8, height=height)
-    xic = plot_xic_w_background(spectrum_slice).properties(width=width*0.2, height=height*0.3)
+    xic = plot_xic_w_background(spectrum_slice)#.properties(width=width*0.2, height=height*0.3)
+    
+    corrs = plot_correlations(spectrum_slice, mz_library)
 
-    return ((mirror | xic)
-        .resolve_scale(
-            color='independent'
-        ).configure_view(
-            stroke=None
-        )
+    mirror_corrs = (
+        altair.vconcat(mirror.properties(width=width*0.75,height=height*0.8),
+                       corrs.properties(width=width*0.75,height=height*0.2))
+        .resolve_scale( x='shared' , color='independent', size='independent')
     )
+    
+    p = ((mirror_corrs | xic.properties(width=width*0.25,height=height*0.5))
+        .resolve_scale( color='independent')
+        .configure_view(stroke=None )
+    )
+    
+    return p
+
+
 
