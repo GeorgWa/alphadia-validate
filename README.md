@@ -1,6 +1,6 @@
 # alphadia-validate
 A set of tools to validate DIA data.
-![Example for extended mirror plot](misc/mirror_example.png)
+![Example for extended mirror plot](misc/mirror.png)
 
 ## Run locally
 1. create a conda environment, install AlphaDIA (cf. https://github.com/MannLabs/alphadia?tab=readme-ov-file#pip-installation)
