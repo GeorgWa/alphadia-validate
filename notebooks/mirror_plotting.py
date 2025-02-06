@@ -10,6 +10,27 @@ fragment_colos = {'a': '#388E3C', 'b': '#1976D2', 'c': '#00796B',
           'x': '#7B1FA2', 'y': '#D32F2F', 'z': '#F57C00',
           'unknown': '#212121', None: "#808080" }
 
+def _get_colors(n_colors, palette_name=None):
+    if palette_name is not None:
+        pal = sns.color_palette(palette_name, n_colors )
+        colors = list(pal.as_hex())
+    else:
+        pal = sns.color_palette('Spectral', n_colors + 3)#.as_hex
+        colors = list(pal.as_hex())
+        remove_middle_elements(colors)
+    return colors
+
+def remove_middle_elements(lst):
+    middle_index = len(lst) // 2
+    lst.pop(middle_index)
+    lst.pop(middle_index-1)
+    lst.pop(middle_index-2)
+    #lst.pop(0) ## delete first 3 elements
+    #lst.pop(0)
+    #lst.pop(0)
+    return lst
+
+
 def split_dense_byRT(dense, mz_library, label_library):
     intensity_observed_full = dense[0].sum(axis=(1, 2)) ## do not sum over rt have shape (int, rt)
     
@@ -206,7 +227,7 @@ def plot_obs_byRT(df_plot):
     )
     
     num_rts = df_plot[['rt_cat']].drop_duplicates().shape[0]
-    rt_colors = get_palette_for_RT(num_rts)
+    rt_colors = _get_colors(n_colors=num_rts)#get_palette_for_RT(num_rts)
     color = altair.Color('rt_cat', scale=altair.Scale(scheme='set2', range=rt_colors), title='RT Scan')
     x = altair.X('mz', axis=altair.Axis(title='m/z', titleFontStyle='italic', grid=True),
                               scale=altair.Scale(nice=False, padding=5, zero=False,
@@ -250,4 +271,73 @@ def plot_theo(df_plot):
              .encode(x=x, y=y, tooltip=anno)
     )
 
+
+def plot_xic_w_background(spectrum_slice, palette_name=None, hex_colors=None):
+    xic_observed = spectrum_slice[0].sum(axis=(1, 2)) ## this gives us mz info and rt info
+    ## this gives intensities for every m/z and RT scan
+    df_xic = pd.DataFrame(xic_observed).reset_index().rename(columns={'index':'mz_scan'})
+    df_xic = df_xic.melt(id_vars=['mz_scan'], var_name='RT_scan', value_name='intensity')
+    n_colors=df_xic[['RT_scan']].drop_duplicates().shape[0]
+    
+    # Compute mean/median intensity across mz scans
+    median_data = df_xic.groupby('RT_scan', as_index=False)['intensity'].mean()
+
+    try: #if hex_colors is not None:
+        background_colors = hex_colors[:n_colors]
+    except:
+        background_colors = _get_colors(palette_name=palette_name, n_colors=n_colors)
+        
+            
+    # Create background bars to distinguish RT scans
+    background = altair.Chart(df_xic).mark_bar(opacity=0.05).encode(
+        x=altair.X('RT_scan:O', axis=altair.Axis(title='RT scan')),
+        #x=altair.X('RT_scan:O', axis=None),
+        y=altair.value(1),  # Dummy value for full-height bars
+        color=altair.Color('RT_scan:O', 
+                        scale=altair.Scale(domain=list(df_xic['RT_scan'].unique()),
+                                        range=background_colors), legend=None)
+    ).properties(
+        width=400, height=300,
+        title=''
+    )
+    
+    # Create the line plot with a continuous color legend
+    base_chart = altair.Chart(df_xic).mark_line().encode(
+        x=altair.X('RT_scan:Q', axis=altair.Axis(title=None, labels=False, ticks=False)),#'RT_scan:Q',
+        y='intensity:Q',
+        color=altair.Color('mz_scan:Q', scale=altair.Scale(scheme='greys'), 
+                        legend=altair.Legend(title="m/z scan"))
+    )
+    
+    
+    # Add median intensity line in red with legend
+    median_chart = altair.Chart(median_data).mark_line(color='red').encode(
+        x=altair.X('RT_scan:Q', axis=altair.Axis(title=None, labels=False, ticks=False)),#'RT_scan:Q',
+        #x='RT_scan:Q',
+        y='intensity:Q'
+    )
+    
+    # Combine charts
+    chart = background + base_chart + median_chart
+    
+    return chart
+
+
+def mirror_w_xic(spectrum_slice, mz_library, intensity_library, 
+                 fragment_library, precursor_entry,
+                 width=600, height=300):
+
+
+    mirror = plot_mirror_byRT(spectrum_slice, mz_library, intensity_library, 
+                 fragment_library, precursor_entry,
+                 width=width*0.8, height=height)
+    xic = plot_xic_w_background(spectrum_slice).properties(width=width*0.2, height=height*0.3)
+
+    return ((mirror | xic)
+        .resolve_scale(
+            color='independent'
+        ).configure_view(
+            stroke=None
+        )
+    )
 
