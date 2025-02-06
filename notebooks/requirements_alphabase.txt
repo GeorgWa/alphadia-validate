@@ -1,0 +1,20 @@
+# this is to reduce the original alphabase dependencies
+#numba
+#numpy
+#pyyaml
+#pandas
+h5py
+#contextlib2
+#xxhash
+#biopython
+#psutil
+#tqdm
+#scikit-learn
+#regex
+# pydivsufsort
+#dask
+#dask_expr
+#pyahocorasick
+#pyteomics
+#lxml
+#rdkit==2024.3.3
