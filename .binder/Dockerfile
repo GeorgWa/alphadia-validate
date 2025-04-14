@@ -53,8 +53,8 @@ ENV BASE_FOLDER=/app/base
 
 RUN rm -r alphadia alphabase
 
-# change owner to be able to write to that folder
-COPY --chown=${USER}:${USER} example_nbs example_nbs
+## change owner to be able to write to that folder
+#COPY --chown=${USER}:${USER} example_nbs example_nbs
 
 # build & debug:
 # docker build --progress=plain --build-arg="NB_USER=user" --build-arg="NB_UID=1000" -f .binder/Dockerfile -t alphaquant-binder .
