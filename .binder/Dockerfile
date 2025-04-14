@@ -43,18 +43,14 @@ RUN cd alphadia && pip install ".[stable]"
 RUN pip install matplotlib progressbar altair seaborn
 RUN pip install jupyter
 
-
-# copy over the code
-COPY notebooks/src /app/notebooks/src
-COPY notebooks/showcase.ipynb /app/notebooks
-COPY misc /app/misc
-
-ENV BASE_FOLDER=/app/base
-
 RUN rm -r alphadia alphabase
 
-## change owner to be able to write to that folder
-#COPY --chown=${USER}:${USER} example_nbs example_nbs
+# copy over the code
+COPY notebooks/src ${HOME}/src
+COPY notebooks/showcase.ipynb ${HOME}/notebooks
+COPY misc ${HOME}/misc
+
+ENV BASE_FOLDER=${HOME}/base
 
 # build & debug:
 # docker build --progress=plain --build-arg="NB_USER=user" --build-arg="NB_UID=1000" -f .binder/Dockerfile -t alphaquant-binder .
