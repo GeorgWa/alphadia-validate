@@ -1,5 +1,4 @@
 import os
-import pickle
 from pathlib import Path
 
 import pandas as pd
@@ -12,7 +11,7 @@ from alphabase.tools.data_downloader import DataShareDownloader
 from alphabase.spectral_library.flat import SpecLibFlat
 
 # Bulk injections of HeLa cell lysate acquired on the Orbitrap Astral
-RAW_DATA_URL = "https://datashare.biochem.mpg.de/s/VfqtW5p9MJ0kxAC/download?files=20231017_OA2_TiHe_ADIAMA_HeLa_200ng_Evo011_21min_F-40_07.raw"
+RAW_DATA_URL = "https://datashare.biochem.mpg.de/s/VfqtW5p9MJ0kxAC/download?files=20231017_OA2_TiHe_ADIAMA_HeLa_200ng_Evo011_21min_F-40_07.mzML"
 
 
 # results from search_1.10.0.ipynb
@@ -30,7 +29,6 @@ def prepare_data(
     main_folder: Path,
     *,
     download_data: bool = False,
-    save_pickle: bool = False,
     raw_file_name: str = None,
     precursors_file_name: str = None,
     speclib_file_name: str = None,
@@ -41,7 +39,6 @@ def prepare_data(
 
     :param main_folder: folder in which data is expected / will be downloaded to
     :param download_data: whether to download the data
-    :param save_pickle: whether to save the raw data to a pickle file (just for maintainers)
     :param precursors_file_name: name of the precursors file (required if download_data is False)
     :param raw_file_name: name of the raw file (required if download_data is False)
     :param speclib_file_name: name of the speclib file (required if download_data is False)
