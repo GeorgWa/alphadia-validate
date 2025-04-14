@@ -6,6 +6,7 @@ import pandas as pd
 from alphabase.spectral_library.base import SpecLibBase
 
 from alphadia.data.alpharaw_wrapper import Thermo, Sciex, MzML
+from alphadia.data.bruker import TimsTOFTranspose
 
 from alphadia.test_data_downloader import DataShareDownloader
 from alphabase.spectral_library.flat import SpecLibFlat
@@ -69,30 +70,18 @@ def prepare_data(
     spectral_library = SpecLibBase()
     spectral_library.load_hdf(speclib_path)
 
-    # caching to pkl
-    if (pkl_path := Path(main_folder) / f"{Path(raw_file_path).stem}.pkl").exists():
-        print("loading raw data from pkl...")
-        with open(pkl_path, "rb") as file:
-            dia_data = pickle.load(file)
+    if raw_file_path.suffix.lower() == ".mzml":
+        dia_data = MzML(str(raw_file_path))
+    elif raw_file_path.suffix.lower() == ".raw":
+        dia_data = Thermo(str(raw_file_path))
+    elif raw_file_path.suffix.lower() == ".wiff":
+        dia_data = Sciex(str(raw_file_path))
+    elif raw_file_path.suffix.lower() == ".d":
+        dia_data = TimsTOFTranspose(str(raw_file_path))
     else:
-        if raw_file_path.suffix == ".raw":
-            dia_data = Thermo(str(raw_file_path))
-        elif raw_file_path.suffix.lower() == ".mzml":
-            dia_data = MzML(str(raw_file_path))
-        elif raw_file_path.suffix.lower() == ".wiff":
-            dia_data = Sciex(str(raw_file_path))
-        else:
-            raise ValueError(
-                f"Unsupported file type: {raw_file_path.suffix}. Supported types are .raw, .mzML, .wiff"
-            )
-        # elif raw_file_path.suffix == ".d":
-        # TODO
-        #     dia_data = Bruker(raw_file_path)
-
-        if save_pickle:
-            print("saving raw data to pkl...")
-            with open(pkl_path, "wb") as file:
-                pickle.dump(dia_data, file)
+        raise ValueError(
+            f"Unsupported file type: {raw_file_path.suffix}. Supported types are .mzML, .raw, .wiff, and .d"
+        )
 
     spectral_library_flat = SpecLibFlat()
     spectral_library_flat.parse_base_library(spectral_library)
