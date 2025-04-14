@@ -4,6 +4,8 @@ FROM python:3.11
 RUN pip install --no-cache --upgrade pip && \
     pip install --no-cache notebook jupyterlab
 
+RUN printf '[install]\ncompile = no\n[global]\nno-cache-dir = True' >> /etc/pip.conf
+
 # create user with a home directory
 ARG NB_USER
 ARG NB_UID
@@ -18,7 +20,6 @@ WORKDIR ${HOME}
 USER ${USER}
 
 # from here it's the same as the Dockerfile in the root folder
-RUN printf '[install]\ncompile = no\n[global]\nno-cache-dir = True' >> /etc/pip.conf
 
 COPY misc/clean_reqs.sh .
 
