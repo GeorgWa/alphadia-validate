@@ -5,18 +5,18 @@ from pathlib import Path
 import pandas as pd
 from alphabase.spectral_library.base import SpecLibBase
 
-from alphadia.data.alpharaw_wrapper import Thermo
+from alphadia.data.alpharaw_wrapper import Thermo, Sciex, MzML
 
 from alphadia.test_data_downloader import DataShareDownloader
 from alphabase.spectral_library.flat import SpecLibFlat
 
 # Bulk injections of HeLa cell lysate acquired on the Orbitrap Astral
-RAW_DATA_URL = "https://datashare.biochem.mpg.de/s/339jg5HtGrwLwDN/download?files=20231017_OA2_TiHe_ADIAMA_HeLa_200ng_Evo011_21min_F-40_07.raw"
+RAW_DATA_URL = "https://datashare.biochem.mpg.de/s/VfqtW5p9MJ0kxAC/download?files=20231017_OA2_TiHe_ADIAMA_HeLa_200ng_Evo011_21min_F-40_07.raw"
 
 
 # results from search_1.10.0.ipynb
-PRECURSORS_TSV_URL = "https://datashare.biochem.mpg.de/s/fsCqlT757ttVWI8"
-SPECLIB_URL = "https://datashare.biochem.mpg.de/s/VxakpS6mhM2IwxJ"
+PRECURSORS_TSV_URL = "https://datashare.biochem.mpg.de/s/VfqtW5p9MJ0kxAC/download?files=precursors.tsv"
+SPECLIB_URL = "https://datashare.biochem.mpg.de/s/VfqtW5p9MJ0kxAC/download?files=speclib.hdf"
 
 
 from joblib import Memory
@@ -62,7 +62,7 @@ def prepare_data(
         raw_file_path = main_folder / raw_file_name
         speclib_path = main_folder / speclib_file_name
 
-    current_raw_name = os.path.basename(raw_file_path).replace(".raw", "")
+    current_raw_name = raw_file_path.stem
     precursor_df = pd.read_csv(precursors_tsv_path, sep="\t")
     precursor_df = precursor_df[precursor_df["run"] == current_raw_name]
 
@@ -75,7 +75,20 @@ def prepare_data(
         with open(pkl_path, "rb") as file:
             dia_data = pickle.load(file)
     else:
-        dia_data = Thermo(raw_file_path)
+        if raw_file_path.suffix == ".raw":
+            dia_data = Thermo(str(raw_file_path))
+        elif raw_file_path.suffix.lower() == ".mzml":
+            dia_data = MzML(str(raw_file_path))
+        elif raw_file_path.suffix.lower() == ".wiff":
+            dia_data = Sciex(str(raw_file_path))
+        else:
+            raise ValueError(
+                f"Unsupported file type: {raw_file_path.suffix}. Supported types are .raw, .mzML, .wiff"
+            )
+        # elif raw_file_path.suffix == ".d":
+        # TODO
+        #     dia_data = Bruker(raw_file_path)
+
         if save_pickle:
             print("saving raw data to pkl...")
             with open(pkl_path, "wb") as file:
@@ -87,7 +100,7 @@ def prepare_data(
     return precursor_df, spectral_library, spectral_library_flat, dia_data
 
 
-def _download_data(main_folder: Path) -> tuple[str, str, str]:
+def _download_data(main_folder: Path) -> tuple[Path, Path, Path]:
     """Download data if not already present."""
     os.makedirs(main_folder, exist_ok=True)
 
@@ -98,7 +111,7 @@ def _download_data(main_folder: Path) -> tuple[str, str, str]:
     ).download()
     speclib_path = DataShareDownloader(SPECLIB_URL, str(main_folder)).download()
 
-    return precursors_tsv_path, raw_file_path, speclib_path
+    return Path(precursors_tsv_path), Path(raw_file_path), Path(speclib_path)
 
 
 def display_spectral_library(spectral_library):
