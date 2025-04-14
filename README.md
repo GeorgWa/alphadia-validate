@@ -26,7 +26,7 @@ Then point the notebook to the data (cf. "Set up data" cell).
 ## Run locally
 1. create a conda environment, install AlphaDIA (cf. https://github.com/MannLabs/alphadia?tab=readme-ov-file#pip-installation)
 ```bash
-pip install "alphadia[stable]==1.9.3-dev2""
+pip install "alphadia[stable]"
 ```
 2. (optional, if using Thermo `.raw` or Sciex `.wiff` files) install `mono` (non-Windows only!)
 3. `pip install jupyter altair`
@@ -36,17 +36,17 @@ pip install "alphadia[stable]==1.9.3-dev2""
 This is a convenient solution to try this out without any modification to your system (except for Docker).
 However, it just works with `mzml` files (we didn't get mono to run in the container on MacOS).
 
-1. Install [Docker](https://docs.docker.com/engine/install/ubuntu/).
+1. Install [Docker](https://docs.docker.com/engine/install/ubuntu/). Make sure assign enough memory (~ 8 GB) to containers.
 
 2. Clone this repository, `cd` into it and build the container
 ```bash
-docker build -f Dockerfile --progress=plain -t alphadia-validiate .
+docker build -f Dockerfile --progress=plain -t alphadia-validate .
 ```
 
 3. Run the container
 ```bash
 BASE_FOLDER=~/alphadia-validate
-docker run -p 8888:8888 -v $BASE_FOLDER:/app/base/ -it alphadia-validiate
+docker run -p 8888:8888 -v $BASE_FOLDER:/app/base/ -it alphadia-validate
 ```
 
 4. Open the Jupyter notebook in your browser: http://localhost:8888/notebooks/notebooks/showcase.ipynb

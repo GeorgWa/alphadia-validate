@@ -61,6 +61,7 @@ def prepare_data(
     spectral_library = SpecLibBase()
     spectral_library.load_hdf(speclib_path)
 
+    print("Reading raw file ...")
     if raw_file_path.suffix.lower() == ".mzml":
         dia_data = MzML(str(raw_file_path))
     elif raw_file_path.suffix.lower() == ".raw":
@@ -74,6 +75,7 @@ def prepare_data(
             f"Unsupported file type: {raw_file_path.suffix}. Supported types are .mzML, .raw, .wiff, and .d"
         )
 
+    print("Parsing spectral library ...")
     spectral_library_flat = SpecLibFlat()
     spectral_library_flat.parse_base_library(spectral_library)
 

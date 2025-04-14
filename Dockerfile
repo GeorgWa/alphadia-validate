@@ -45,7 +45,7 @@ ENV BASE_FOLDER=/app/base
 
 RUN rm -r alphadia alphabase
 RUN apt-get clean && \
-  rm -rf /var/lib/apt/lists/* \
+  rm -rf /var/lib/apt/lists/*
 
 # Make port 8888 available to the world outside this container
 EXPOSE 8888
