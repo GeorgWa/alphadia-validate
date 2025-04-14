@@ -46,7 +46,7 @@ RUN pip install jupyter
 RUN rm -r alphadia alphabase
 
 # copy over the code
-COPY notebooks/src ${HOME}/src
+COPY notebooks/src ${HOME}/notebooks/src
 COPY notebooks/showcase.ipynb ${HOME}/notebooks
 COPY misc ${HOME}/misc
 
