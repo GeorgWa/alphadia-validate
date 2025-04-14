@@ -11,12 +11,13 @@ and
 If you have any troubles, questions or suggestions, please get in touch,
 e.g. by [opening an issue](https://github.com/GeorgWa/alphadia-validate/issues/new?template=Blank+issue).
 
-## Data
+## Prepare Data
+### Example Data
 The main notebook is designed to run self-contained, if you don't provide data, it will download it.
 
-If you want to use your own data, process it with AlphaDIA (cf. 
-[search.ipynb]((https://github.com/GeorgWa/alphadia-validate/blob/main/notebooks/initial/search.ipynb))
-and/or this [guide](https://alphadia.readthedocs.io/en/latest/guides/libfree-gui.html),
+### Custom Data
+If you want to use your own data, process it with AlphaDIA (cf. this [guide](https://alphadia.readthedocs.io/en/latest/guides/libfree-gui.html)
+or [search.ipynb](https://github.com/GeorgWa/alphadia-validate/blob/main/notebooks/initial/search.ipynb)),
 and save it together with the `precursors.tsv` and the `speclib.hdf` files here:
 ```bash
 mkdir ~/alphadia-validate
