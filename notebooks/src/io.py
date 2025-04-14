@@ -19,12 +19,6 @@ PRECURSORS_TSV_URL = "https://datashare.biochem.mpg.de/s/VfqtW5p9MJ0kxAC/downloa
 SPECLIB_URL = "https://datashare.biochem.mpg.de/s/VfqtW5p9MJ0kxAC/download?files=speclib.hdf"
 
 
-from joblib import Memory
-
-memory = Memory(".memoize_cachedir")
-
-
-@memory.cache
 def prepare_data(
     main_folder: Path,
     *,
