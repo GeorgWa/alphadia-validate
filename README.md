@@ -29,7 +29,7 @@ Then point the notebook to the data (cf. "Set up data" cell).
 pip install "alphadia[stable]==1.9.3-dev2""
 ```
 2. (optional, if using Thermo `.raw` or Sciex `.wiff` files) install `mono` (non-Windows only!)
-3. Install jupyter
+3. `pip install jupyter altair`
 4. Open the two main notebooks (cf. above) and start exploring 
 
 ## Run in Docker

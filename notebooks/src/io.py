@@ -8,7 +8,7 @@ from alphabase.spectral_library.base import SpecLibBase
 from alphadia.data.alpharaw_wrapper import Thermo, Sciex, MzML
 from alphadia.data.bruker import TimsTOFTranspose
 
-from alphadia.test_data_downloader import DataShareDownloader
+from alphabase.tools.data_downloader import DataShareDownloader
 from alphabase.spectral_library.flat import SpecLibFlat
 
 # Bulk injections of HeLa cell lysate acquired on the Orbitrap Astral
