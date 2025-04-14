@@ -52,8 +52,6 @@ COPY misc /app/misc
 ENV BASE_FOLDER=/app/base
 
 RUN rm -r alphadia alphabase
-RUN apt-get clean && \
-  rm -rf /var/lib/apt/lists/* \
 
 # change owner to be able to write to that folder
 COPY --chown=${USER}:${USER} example_nbs example_nbs
