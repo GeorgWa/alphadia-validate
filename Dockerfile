@@ -17,7 +17,7 @@ COPY misc/clean_reqs.sh .
 
 RUN git clone https://github.com/MannLabs/alphadia.git \
     && cd alphadia \
-    && git checkout slimmer_utils
+    && git checkout 8abcacd202757271195460a35253e3612852b2ea  # this is the slimmer_utils branch
 
 RUN git clone https://github.com/MannLabs/alphabase.git \
     && cd alphabase \
@@ -52,9 +52,3 @@ EXPOSE 8888
 
 CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root", \
 "--NotebookApp.token=''", "--NotebookApp.password=''"]
-#
-##docker build -f Dockerfile  --progress=plain  --build-arg="ALPHABASE_REF=latest" -t validiate .
-#
-## run bash:
-## DATA_FOLDER=.
-## docker run -v $DATA_FOLDER:/app/data/ -it validiate bash
