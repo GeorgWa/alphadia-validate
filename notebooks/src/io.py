@@ -11,18 +11,18 @@ from alphabase.tools.data_downloader import DataShareDownloader
 from alphabase.spectral_library.flat import SpecLibFlat
 
 # Bulk injections of HeLa cell lysate acquired on the Orbitrap Astral
-RAW_DATA_URL = "https://datashare.biochem.mpg.de/s/VfqtW5p9MJ0kxAC/download?files=20231017_OA2_TiHe_ADIAMA_HeLa_200ng_Evo011_21min_F-40_07.mzML"
+EXAMPLE_RAW_DATA_URL = "https://datashare.biochem.mpg.de/s/VfqtW5p9MJ0kxAC/download?files=20231017_OA2_TiHe_ADIAMA_HeLa_200ng_Evo011_21min_F-40_07.mzML"
 
 
 # results from search_1.10.0.ipynb
-PRECURSORS_TSV_URL = "https://datashare.biochem.mpg.de/s/VfqtW5p9MJ0kxAC/download?files=precursors.tsv"
-SPECLIB_URL = "https://datashare.biochem.mpg.de/s/VfqtW5p9MJ0kxAC/download?files=speclib.hdf"
+EXAMPLE_PRECURSORS_TSV_URL = "https://datashare.biochem.mpg.de/s/VfqtW5p9MJ0kxAC/download?files=precursors.tsv"
+EXAMPLE_SPECLIB_URL = "https://datashare.biochem.mpg.de/s/VfqtW5p9MJ0kxAC/download?files=speclib.hdf"
 
 
 def prepare_data(
     main_folder: Path,
     *,
-    download_data: bool = False,
+    download_urls: tuple[str, str, str] | None = None,
     raw_file_name: str = None,
     precursors_file_name: str = None,
     speclib_file_name: str = None,
@@ -32,14 +32,14 @@ def prepare_data(
     If the download_data is true, this function will download the required data.
 
     :param main_folder: folder in which data is expected / will be downloaded to
-    :param download_data: whether to download the data
+    :param download_urls: a optional tuple (raw_file_url, precursors_tsv_url, speclib_url) with the URLs to download the data
     :param precursors_file_name: name of the precursors file (required if download_data is False)
     :param raw_file_name: name of the raw file (required if download_data is False)
     :param speclib_file_name: name of the speclib file (required if download_data is False)
     :return:
     """
-    if download_data:
-        precursors_tsv_path, raw_file_path, speclib_path = _download_data(main_folder)
+    if download_urls:
+        precursors_tsv_path, raw_file_path, speclib_path = _download_data(main_folder, *download_urls)
     else:
         if (
             precursors_file_name is None
@@ -82,16 +82,16 @@ def prepare_data(
     return precursor_df, spectral_library, spectral_library_flat, dia_data
 
 
-def _download_data(main_folder: Path) -> tuple[Path, Path, Path]:
+def _download_data(main_folder: Path, raw_data_url: str, precursors_tsv_url: str, speclib_url: str) -> tuple[Path, Path, Path]:
     """Download data if not already present."""
     os.makedirs(main_folder, exist_ok=True)
 
-    raw_file_path = DataShareDownloader(RAW_DATA_URL, str(main_folder)).download()
+    raw_file_path = DataShareDownloader(raw_data_url, str(main_folder)).download()
 
     precursors_tsv_path = DataShareDownloader(
-        PRECURSORS_TSV_URL, str(main_folder)
+        precursors_tsv_url, str(main_folder)
     ).download()
-    speclib_path = DataShareDownloader(SPECLIB_URL, str(main_folder)).download()
+    speclib_path = DataShareDownloader(speclib_url, str(main_folder)).download()
 
     return Path(precursors_tsv_path), Path(raw_file_path), Path(speclib_path)
 
