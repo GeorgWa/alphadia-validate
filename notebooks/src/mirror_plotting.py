@@ -293,10 +293,19 @@ def plot_obs_byRT(df_plot):
         else "#0000FF"
     )
 
-    num_rts = df_plot[["rt_cat"]].drop_duplicates().shape[0]
-    rt_colors = _get_colors(n_colors=num_rts)  # get_palette_for_RT(num_rts)
+    # Extract the numeric part of rt_cat for sorting: e.g. "1, r=0.13" => "1"
+    df_plot["rt_idx"] = df_plot["rt_cat"].apply(
+        lambda x: int(x.split(',')[0]) if isinstance(x, str) and ',' in x else x
+    )
+
+    # Get unique categories in numeric order
+    rt_categories = df_plot.sort_values("rt_idx")["rt_cat"].unique().tolist()
+
+    rt_colors = _get_colors(n_colors=len(rt_categories))  # get_palette_for_RT(num_rts)
     color = altair.Color(
-        "rt_cat", scale=altair.Scale(scheme="set2", range=rt_colors), title="RT Scan"
+        "rt_cat",
+        scale=altair.Scale(domain=rt_categories, range=rt_colors),
+        title="RT Scan"
     )
     x = altair.X(
         "mz",
