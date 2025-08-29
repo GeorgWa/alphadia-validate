@@ -3,8 +3,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from .xic_utils import normalize_profiles, median_axis, correlation_coefficient
-
+from .xic_utils import correlation_coefficient, median_axis, normalize_profiles
 
 fragment_colos = {
     "a": "#388E3C",
@@ -189,15 +188,18 @@ def get_palette_for_RT(num_rt_scans):
 
 
 def format_prec_entry(prec):
-    if type(prec.mods) == "str":
-        mod_label_mapping = {"Carbamidomethyl": "", "Oxidation": "(Ox)"}
-        prec = precursor_df.iloc[9]
+    if isinstance(prec.mods, str):
+        mod_label_mapping = {
+            "Carbamidomethyl": "",
+            "Oxidation": "(Ox)",
+        }
+
         seq = list(prec.sequence)
         mods = [m.split("@")[0] for m in prec.mods.split(";")]
         sites = np.array(prec.mod_sites.split(";"), dtype=int) - 1
         for i, s in enumerate(sites):
             mod = (
-                mods[i]
+                f"({mods[i]})"
                 if mods[i] not in mod_label_mapping
                 else mod_label_mapping[mods[i]]
             )
@@ -295,7 +297,7 @@ def plot_obs_byRT(df_plot):
 
     # Extract the numeric part of rt_cat for sorting: e.g. "1, r=0.13" => "1"
     df_plot["rt_idx"] = df_plot["rt_cat"].apply(
-        lambda x: int(x.split(',')[0]) if isinstance(x, str) and ',' in x else x
+        lambda x: int(x.split(",")[0]) if isinstance(x, str) and "," in x else x
     )
 
     # Get unique categories in numeric order
@@ -305,7 +307,7 @@ def plot_obs_byRT(df_plot):
     color = altair.Color(
         "rt_cat",
         scale=altair.Scale(domain=rt_categories, range=rt_colors),
-        title="RT Scan"
+        title="RT Scan",
     )
     x = altair.X(
         "mz",
