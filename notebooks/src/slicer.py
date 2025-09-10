@@ -122,15 +122,37 @@ class SpectrumSlicer:
 
     def _add_missing_indices(self):
         """Add frame/scan indices if missing"""
-        if "frame_start" in self.precursor_df.columns:
+        required_columns = ["frame_start", "frame_stop", "scan_start", "scan_stop"]
+        has_required = {
+            col: col in self.precursor_df.columns for col in required_columns
+        }
+
+        if all(has_required.values()):
             return
 
+        if any(has_required.values()):
+            present_cols = [col for col, present in has_required.items() if present]
+            raise ValueError(
+                "Inconsistent state: some but not all required DIA index columns are present."
+                f" Present: {present_cols}"
+            )
+
+        rt_columns = ["rt_start", "rt_stop"]
+        if not all(col in self.precursor_df.columns for col in rt_columns):
+            raise ValueError(
+                "Cannot calculate DIA indices because 'rt_start' and/or 'rt_stop' are missing."
+            )
+
         print("Converting RT values to DIA cycle frame indices...")
-        for idx, row in self.precursor_df.iterrows():
+
+        def get_frames(row):
             rt_limits = np.array([row["rt_start"], row["rt_stop"]], dtype=np.float32)
             frame_indices = self.jit_data._get_frame_indices(rt_limits, 1, 1)
+            return frame_indices[0, 0], frame_indices[0, 1]
 
-            self.precursor_df.at[idx, "frame_start"] = frame_indices[0, 0]
-            self.precursor_df.at[idx, "frame_stop"] = frame_indices[0, 1]
-            self.precursor_df.at[idx, "scan_start"] = 0
-            self.precursor_df.at[idx, "scan_stop"] = 0
+        frames = self.precursor_df.apply(get_frames, axis=1, result_type="expand")
+
+        self.precursor_df["frame_start"] = frames[0]
+        self.precursor_df["frame_stop"] = frames[1]
+        self.precursor_df["scan_start"] = 0
+        self.precursor_df["scan_stop"] = 0
