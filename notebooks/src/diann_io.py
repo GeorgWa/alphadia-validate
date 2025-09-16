@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 from typing import Any
 
-import numpy as np
 import pandas as pd
 from alphabase.peptide.precursor import hash_precursor_df
 from alphabase.psm_reader import psm_reader_provider
@@ -12,7 +11,6 @@ from alphabase.spectral_library.flat import SpecLibFlat
 from alphabase.tools.data_downloader import DataShareDownloader
 from alphadia.raw_data.alpharaw_wrapper import Thermo
 from peptdeep.pretrained_models import ModelManager
-
 
 EXAMPLE_DIANN_REPORT_URL = (
     "https://datashare.biochem.mpg.de/s/Z8bOcBz6QViCVKN/download?"
@@ -52,17 +50,6 @@ def prepare_precursor_df(
     return precursor_df
 
 
-def predict_fragment_intensity(
-    speclib_base: SpecLibBase, instrument: str, nce: float, model_device: str
-) -> pd.DataFrame:
-    model_mgr = ModelManager(device=model_device)
-    model_mgr.instrument = instrument
-    model_mgr.nce = nce
-    intensity_df = model_mgr.predict_ms2(speclib_base.precursor_df)
-    speclib_base._fragment_intensity_df = intensity_df
-    return intensity_df
-
-
 def prepare_speclib_base(
     precursor_df: pd.DataFrame,
     charged_frag_types: list[str],
@@ -70,23 +57,17 @@ def prepare_speclib_base(
     nce: float,
     model_device: str,
 ) -> SpecLibBase:
+    model_mgr = ModelManager(device=model_device)
+    model_mgr.instrument = instrument
+    model_mgr.nce = nce
+
+    res = model_mgr.predict_all(precursor_df.copy())
+
     speclib_base = SpecLibBase(charged_frag_types=charged_frag_types)
-    speclib_base.precursor_df = precursor_df
-    speclib_base.calc_fragment_mz_df()
+    speclib_base._precursor_df = res["precursor_df"]
+    speclib_base._fragment_mz_df = res["fragment_mz_df"]
+    speclib_base._fragment_intensity_df = res["fragment_intensity_df"]
 
-    speclib_base.precursor_df["nAA"] = speclib_base.precursor_df["sequence"].str.len()
-    frag_counts = (speclib_base.precursor_df["nAA"] - 1).to_numpy(dtype=np.int64)
-    frag_start_idx = np.concatenate(([0], np.cumsum(frag_counts)[:-1]))
-    frag_stop_idx = np.cumsum(frag_counts)
-    speclib_base.precursor_df["frag_start_idx"] = frag_start_idx
-    speclib_base.precursor_df["frag_stop_idx"] = frag_stop_idx
-
-    intensity_df = predict_fragment_intensity(
-        speclib_base, instrument, nce, model_device
-    )
-    speclib_base._fragment_intensity_df = intensity_df
-
-    assert frag_stop_idx[-1] == len(speclib_base.fragment_mz_df), "Row count mismatch!"
     return speclib_base
 
 
@@ -144,11 +125,9 @@ def load_diann_data(
         raise ValueError(
             f"Unsupported raw format: {raw_path.suffix}. " "Expecting .raw"
         )
-
+    nce = 28
     if "nce" in dia_data.spectrum_df.columns and not dia_data.spectrum_df.empty:
         nce = float(dia_data.spectrum_df["nce"].max())
-    else:
-        raise ValueError("dia_data.spectrum_df lacks an 'nce' column or is empty")
 
     register_readers()
     modification_mapping = {
