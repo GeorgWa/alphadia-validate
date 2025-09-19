@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
+import numpy as np
 from alphabase.peptide.precursor import hash_precursor_df
 from alphabase.psm_reader import psm_reader_provider
 from alphabase.psm_reader.dia_psm_reader import register_readers
@@ -148,5 +149,8 @@ def load_diann_data(
 
     spectral_library_flat = SpecLibFlat()
     spectral_library_flat.parse_base_library(speclib_base)
+
+    precursor_df["mods"] = precursor_df["mods"].replace("", np.nan)
+    precursor_df["mod_sites"] = precursor_df["mod_sites"].replace("", np.nan)
 
     return precursor_df, speclib_base, spectral_library_flat, dia_data
