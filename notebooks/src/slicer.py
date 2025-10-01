@@ -3,36 +3,6 @@ import pandas as pd
 from alphabase.spectral_library.flat import SpecLibFlat
 
 
-def get_library_entry_by_hash(speclib, hash_, min_intensity=0.01):
-    speclib_entry = speclib.precursor_df[
-        speclib.precursor_df["mod_seq_charge_hash"] == hash_
-    ].iloc[0]
-
-    fragment_mz = (
-        speclib.fragment_mz_df.iloc[
-            speclib_entry.frag_start_idx : speclib_entry.frag_stop_idx
-        ]
-        .to_numpy()
-        .flatten()
-    )
-    fragment_intensity = (
-        speclib.fragment_intensity_df.iloc[
-            speclib_entry.frag_start_idx : speclib_entry.frag_stop_idx
-        ]
-        .to_numpy()
-        .flatten()
-    )
-    fragment_mask = fragment_intensity > min_intensity
-
-    fragment_mz = fragment_mz[fragment_mask]
-    fragment_intensity = fragment_intensity[fragment_mask]
-
-    # sort both by mz
-    fragment_order = np.argsort(fragment_mz)
-    fragment_mz = fragment_mz[fragment_order]
-    fragment_intensity = fragment_intensity[fragment_order]
-
-
 def get_flat_library_entry_by_hash(speclib_flat, hash_, min_intensity=0.01):
     speclib_entry = speclib_flat.precursor_df[
         speclib_flat.precursor_df["mod_seq_charge_hash"] == hash_
@@ -77,7 +47,7 @@ def get_flat_library_entry_by_hash(speclib_flat, hash_, min_intensity=0.01):
 
 
 type_map = {97: "a", 98: "b", 99: "c", 120: "x", 121: "y", 12: "z"}
-loss_map = {0: "", 18: "H2O", 17: "NH3"}
+loss_map = {0: "", 18: "H2O", 17: "NH3", 98: "modification_loss"}
 
 
 def get_ion_labels(row):
@@ -104,6 +74,8 @@ class SpectrumSlicer:
 
         self.precursor_df = precursor_df
         self.dia_data = dia_data
+        self.jit_data = dia_data.to_jitclass()
+        self._add_missing_indices()
 
     def get_by_hash(
         self, selected_hash: int
@@ -127,7 +99,6 @@ class SpectrumSlicer:
             self.precursor_df["mod_seq_charge_hash"] == selected_hash
         ].iloc[0]
 
-        jit_data = self.dia_data.jitclass()
         precursor_query = np.array(
             [[speclib_entry.precursor_mz, speclib_entry.precursor_mz]], dtype=np.float32
         )
@@ -139,7 +110,7 @@ class SpectrumSlicer:
             dtype=np.int64,
         )
 
-        spectrum_slice, _precursor_index = jit_data.get_dense(
+        spectrum_slice, _precursor_index = self.jit_data.get_dense(
             frame_limits,
             scan_limits,
             mz_library,
@@ -148,3 +119,40 @@ class SpectrumSlicer:
         )
 
         return mz_library, intensity_library, spectrum_slice, fragment_library
+
+    def _add_missing_indices(self):
+        """Add frame/scan indices if missing"""
+        required_columns = ["frame_start", "frame_stop", "scan_start", "scan_stop"]
+        has_required = {
+            col: col in self.precursor_df.columns for col in required_columns
+        }
+
+        if all(has_required.values()):
+            return
+
+        if any(has_required.values()):
+            present_cols = [col for col, present in has_required.items() if present]
+            raise ValueError(
+                "Inconsistent state: some but not all required DIA index columns are present."
+                f" Present: {present_cols}"
+            )
+
+        rt_columns = ["rt_start", "rt_stop"]
+        if not all(col in self.precursor_df.columns for col in rt_columns):
+            raise ValueError(
+                "Cannot calculate DIA indices because 'rt_start' and/or 'rt_stop' are missing."
+            )
+
+        print("Converting RT values to DIA cycle frame indices...")
+
+        def get_frames(row):
+            rt_limits = np.array([row["rt_start"], row["rt_stop"]], dtype=np.float32)
+            frame_indices = self.jit_data._get_frame_indices(rt_limits, 1, 1)
+            return frame_indices[0, 0], frame_indices[0, 1]
+
+        frames = self.precursor_df.apply(get_frames, axis=1, result_type="expand")
+
+        self.precursor_df["frame_start"] = frames[0]
+        self.precursor_df["frame_stop"] = frames[1]
+        self.precursor_df["scan_start"] = 0
+        self.precursor_df["scan_stop"] = 0

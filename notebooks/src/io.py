@@ -3,23 +3,23 @@ from pathlib import Path
 
 import pandas as pd
 from alphabase.spectral_library.base import SpecLibBase
-
-from alphadia.data.alpharaw_wrapper import Thermo, Sciex, MzML
-from alphadia.data.bruker import TimsTOFTranspose
-
-from alphabase.tools.data_downloader import DataShareDownloader
 from alphabase.spectral_library.flat import SpecLibFlat
+from alphabase.tools.data_downloader import DataShareDownloader
+from alphadia.raw_data.alpharaw_wrapper import MzML, Sciex, Thermo
+from alphadia.raw_data.bruker import TimsTOFTranspose
 
 # Bulk injections of HeLa cell lysate acquired on the Orbitrap Astral
 EXAMPLE_RAW_DATA_URL = "https://datashare.biochem.mpg.de/s/VfqtW5p9MJ0kxAC/download?files=20231017_OA2_TiHe_ADIAMA_HeLa_200ng_Evo011_21min_F-40_07.mzML"
 
+EXAMPLE_PRECURSORS_TSV_URL = (
+    "https://datashare.biochem.mpg.de/s/VfqtW5p9MJ0kxAC/download?files=precursors.tsv"
+)
+EXAMPLE_SPECLIB_URL = (
+    "https://datashare.biochem.mpg.de/s/VfqtW5p9MJ0kxAC/download?files=speclib.hdf"
+)
 
-# results from search_1.10.0.ipynb
-EXAMPLE_PRECURSORS_TSV_URL = "https://datashare.biochem.mpg.de/s/VfqtW5p9MJ0kxAC/download?files=precursors.tsv"
-EXAMPLE_SPECLIB_URL = "https://datashare.biochem.mpg.de/s/VfqtW5p9MJ0kxAC/download?files=speclib.hdf"
 
-
-def prepare_data(
+def load_alphadia_data(
     main_folder: Path,
     *,
     download_urls: tuple[str, str, str] | None = None,
@@ -27,7 +27,7 @@ def prepare_data(
     precursors_file_name: str = None,
     speclib_file_name: str = None,
 ) -> tuple[pd.DataFrame, SpecLibBase, SpecLibFlat, Thermo]:
-    """Prepare raw & results data and return data objects.
+    """Load AlphaDIA results (precursors.tsv + speclib.hdf) and raw data.
 
     If the download_data is true, this function will download the required data.
 
@@ -39,7 +39,9 @@ def prepare_data(
     :return:
     """
     if download_urls:
-        precursors_tsv_path, raw_file_path, speclib_path = _download_data(main_folder, *download_urls)
+        precursors_tsv_path, raw_file_path, speclib_path = (
+            _download_alphadia_example_data(main_folder, *download_urls)
+        )
     else:
         if (
             precursors_file_name is None
@@ -82,8 +84,10 @@ def prepare_data(
     return precursor_df, spectral_library, spectral_library_flat, dia_data
 
 
-def _download_data(main_folder: Path, raw_data_url: str, precursors_tsv_url: str, speclib_url: str) -> tuple[Path, Path, Path]:
-    """Download data if not already present."""
+def _download_alphadia_example_data(
+    main_folder: Path, raw_data_url: str, precursors_tsv_url: str, speclib_url: str
+) -> tuple[Path, Path, Path]:
+    """Download AlphaDIA data if not already present."""
     os.makedirs(main_folder, exist_ok=True)
 
     raw_file_path = DataShareDownloader(raw_data_url, str(main_folder)).download()
